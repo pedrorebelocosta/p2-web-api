@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.nolhtaced</groupId>
             <artifactId>core</artifactId>
-            <version>1.5-SNAPSHOT</version>
+            <version>2.1-eager</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

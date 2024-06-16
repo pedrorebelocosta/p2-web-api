@@ -9,6 +9,7 @@ import org.nolhtaced.core.services.AppointmentService;
 import org.nolhtaced.core.services.CustomerService;
 import org.nolhtaced.webapi.models.user.CreateAppointmentRequest;
 import org.nolhtaced.webapi.models.user.UserAppointmentResponse;
+import org.nolhtaced.webapi.models.user.UserBikeResponse;
 import org.nolhtaced.webapi.models.user.UserResponse;
 import org.nolhtaced.webapi.security.JwtService;
 import org.springframework.http.HttpStatus;
@@ -96,6 +97,26 @@ public class UserService {
                             .build()
                     )
                     .collect(Collectors.toList());
+        } catch (UserNotFoundException e) {
+            return null;
+        }
+    }
+
+    public List<UserBikeResponse> getAuthenticatedUserBikes() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        try {
+            CustomerService userService = new CustomerService(null);
+            Customer customer = userService.getByUsername(username);
+
+            return customer.getBicycles().stream().map(bicycle -> UserBikeResponse.builder()
+                    .name(bicycle.getName())
+                    .brand(bicycle.getBrand())
+                    .model(bicycle.getBrand())
+                    .type(bicycle.getType())
+                    .build()
+            ).collect(Collectors.toList());
         } catch (UserNotFoundException e) {
             return null;
         }

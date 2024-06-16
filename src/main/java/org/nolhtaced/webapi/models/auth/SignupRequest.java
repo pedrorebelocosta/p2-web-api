@@ -14,8 +14,6 @@ public record SignupRequest(
         @JsonProperty("last_name") String lastName,
         @JsonProperty("date_of_birth")
         LocalDate dateOfBirth,
-        Boolean active,
-        @JsonProperty("discount_rate") Float discountRate,
         String address,
         @JsonProperty("vat_no") Integer vatNo
 ) {
@@ -26,8 +24,8 @@ public record SignupRequest(
                 firstName,
                 lastName,
                 dateOfBirth,
-                active,
-                discountRate,
+                true,
+                0F,
                 address,
                 vatNo,
                 new ArrayList<>(),

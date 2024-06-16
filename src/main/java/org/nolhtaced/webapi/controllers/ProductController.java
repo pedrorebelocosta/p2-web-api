@@ -20,11 +20,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.ok(
-                productService.getAllInStock().stream().map(product -> {
+                productService.getAll().stream().peek(product -> {
                     if (product.getImagePath() != null) {
                         product.setImagePath("http://localhost:8080/api/images/" + product.getImagePath());
                     }
-                    return product;
                 }).toList());
     }
 

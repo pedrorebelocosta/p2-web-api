@@ -21,11 +21,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     public AuthResponse register(SignupRequest body) {
         CustomerService service = new CustomerService(null);
         Customer customer = body.asCustomer();
+        System.out.println(customer);
         service.create(customer);
         String token = jwtService.generateToken(body.asCustomerDetails());
         return new AuthResponse(token);

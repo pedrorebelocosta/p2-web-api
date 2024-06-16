@@ -3,6 +3,7 @@ package org.nolhtaced.webapi.controllers;
 import lombok.RequiredArgsConstructor;
 import org.nolhtaced.webapi.models.user.CreateAppointmentRequest;
 import org.nolhtaced.webapi.models.user.UserAppointmentResponse;
+import org.nolhtaced.webapi.models.user.UserBikeResponse;
 import org.nolhtaced.webapi.models.user.UserResponse;
 import org.nolhtaced.webapi.services.UserService;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,11 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
         return ResponseEntity.ok(userService.getAuthenticatedUser(authHeader));
+    }
+
+    @GetMapping("/me/bikes")
+    public ResponseEntity<List<UserBikeResponse>> myBikes(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+        return ResponseEntity.ok(userService.getAuthenticatedUserBikes());
     }
 
     @PostMapping("/me/appointments")
