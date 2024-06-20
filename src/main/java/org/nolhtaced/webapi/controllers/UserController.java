@@ -3,7 +3,7 @@ package org.nolhtaced.webapi.controllers;
 import lombok.RequiredArgsConstructor;
 import org.nolhtaced.webapi.models.user.CreateAppointmentRequest;
 import org.nolhtaced.webapi.models.user.UserAppointmentResponse;
-import org.nolhtaced.webapi.models.user.UserBikeResponse;
+import org.nolhtaced.webapi.models.user.UserBikeBody;
 import org.nolhtaced.webapi.models.user.UserResponse;
 import org.nolhtaced.webapi.services.UserService;
 import org.springframework.http.HttpHeaders;
@@ -20,21 +20,23 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> me(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
-        return ResponseEntity.ok(userService.getAuthenticatedUser(authHeader));
+    public ResponseEntity<UserResponse> me() {
+        return ResponseEntity.ok(userService.getAuthenticatedUser());
     }
 
     @GetMapping("/me/bikes")
-    public ResponseEntity<List<UserBikeResponse>> myBikes(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+    public ResponseEntity<List<UserBikeBody>> myBikes() {
         return ResponseEntity.ok(userService.getAuthenticatedUserBikes());
     }
 
+    @PostMapping("/me/bikes")
+    public ResponseEntity<HttpStatus> addBikeToUser(@RequestBody UserBikeBody bike) {
+        return ResponseEntity.status(userService.createUserBicycle(bike)).build();
+    }
+
     @PostMapping("/me/appointments")
-    public ResponseEntity<HttpStatus> createUserAppointment(
-            @RequestBody CreateAppointmentRequest appointmentBody,
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader
-    ) {
-        return ResponseEntity.status(userService.createUserAppointment(appointmentBody, authHeader)).build();
+    public ResponseEntity<HttpStatus> createUserAppointment(@RequestBody CreateAppointmentRequest appointmentBody) {
+        return ResponseEntity.status(userService.createUserAppointment(appointmentBody)).build();
     }
 
     @GetMapping("/me/appointments")

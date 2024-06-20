@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.nolhtaced.core.enumerators.AppointmentStateEnum;
 import org.nolhtaced.core.exceptions.UserNotFoundException;
 import org.nolhtaced.core.models.Appointment;
+import org.nolhtaced.core.models.Bicycle;
 import org.nolhtaced.core.models.Customer;
 import org.nolhtaced.core.services.AppointmentService;
+import org.nolhtaced.core.services.BicycleService;
 import org.nolhtaced.core.services.CustomerService;
 import org.nolhtaced.webapi.models.user.CreateAppointmentRequest;
 import org.nolhtaced.webapi.models.user.UserAppointmentResponse;
-import org.nolhtaced.webapi.models.user.UserBikeResponse;
+import org.nolhtaced.webapi.models.user.UserBikeBody;
 import org.nolhtaced.webapi.models.user.UserResponse;
 import org.nolhtaced.webapi.security.JwtService;
 import org.springframework.http.HttpStatus;
@@ -17,20 +19,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final JwtService jwtService;
-
-    public UserResponse getAuthenticatedUser(String authHeader) {
-        String authToken = authHeader.substring(7);
-        String username = jwtService.extractUsername(authToken);
+    public UserResponse getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
 
         try {
             Customer customer = new CustomerService(null).getByUsername(username);
@@ -49,10 +48,7 @@ public class UserService {
         }
     }
 
-    public HttpStatus createUserAppointment(
-            CreateAppointmentRequest appointmentBody,
-            String authHeader
-    ) {
+    public HttpStatus createUserAppointment(CreateAppointmentRequest appointmentBody) {
         AppointmentService service = new AppointmentService(null);
         LocalDateTime appointmentDateTime = LocalDateTime.of(appointmentBody.scheduleDate(), appointmentBody.scheduleTime());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -92,6 +88,8 @@ public class UserService {
                     .map(appointment -> UserAppointmentResponse.builder()
                             .createdAt(appointment.getCreatedAt())
                             .type(appointment.getType())
+                            .scheduleDate(LocalDate.ofInstant(appointment.getScheduleDate(), ZoneId.of("UTC")))
+                            .scheduleTime(LocalTime.ofInstant(appointment.getScheduleDate(), ZoneId.of("UTC")))
                             .notes(appointment.getCustomerNotes())
                             .state(appointment.getState())
                             .build()
@@ -102,7 +100,33 @@ public class UserService {
         }
     }
 
-    public List<UserBikeResponse> getAuthenticatedUserBikes() {
+    public HttpStatus createUserBicycle(UserBikeBody bike) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        CustomerService userService = new CustomerService(null);
+
+        try {
+
+            Customer customer = userService.getByUsername(currentPrincipalName);
+            Bicycle bicycle = new Bicycle(
+                    customer.getId(),
+                    bike.name(),
+                    bike.model(),
+                    bike.brand(),
+                    bike.type(),
+                    new ArrayList<>()
+            );
+
+            BicycleService bikeService = new BicycleService(null);
+            bikeService.create(bicycle);
+            return HttpStatus.CREATED;
+        } catch (UserNotFoundException e) {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public List<UserBikeBody> getAuthenticatedUserBikes() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
@@ -110,10 +134,10 @@ public class UserService {
             CustomerService userService = new CustomerService(null);
             Customer customer = userService.getByUsername(username);
 
-            return customer.getBicycles().stream().map(bicycle -> UserBikeResponse.builder()
+            return customer.getBicycles().stream().map(bicycle -> UserBikeBody.builder()
                     .name(bicycle.getName())
                     .brand(bicycle.getBrand())
-                    .model(bicycle.getBrand())
+                    .model(bicycle.getModel())
                     .type(bicycle.getType())
                     .build()
             ).collect(Collectors.toList());
