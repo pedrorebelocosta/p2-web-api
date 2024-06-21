@@ -1,10 +1,7 @@
 package org.nolhtaced.webapi.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.nolhtaced.webapi.models.user.CreateAppointmentRequest;
-import org.nolhtaced.webapi.models.user.UserAppointmentResponse;
-import org.nolhtaced.webapi.models.user.UserBikeBody;
-import org.nolhtaced.webapi.models.user.UserResponse;
+import org.nolhtaced.webapi.models.user.*;
 import org.nolhtaced.webapi.services.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,5 +39,10 @@ public class UserController {
     @GetMapping("/me/appointments")
     public ResponseEntity<List<UserAppointmentResponse>> myAppointments() {
         return ResponseEntity.ok(userService.getAuthenticatedUserAppointments());
+    }
+
+    @PostMapping("/me/orders")
+    public ResponseEntity<HttpStatus> createUserOrder(@RequestBody UserPurchaseRequest request) {
+        return ResponseEntity.status(userService.createUserOrder(request.items())).build();
     }
 }
